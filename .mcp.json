@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "flixter": {
+      "type": "http",
+      "url": "https://flixter.ai/api/mcp",
+      "note": "Flixter hosted MCP (streamable HTTP). Requires OAuth 2.1 with PKCE: on first connection you sign in to your Flixter account in the browser. You need a Flixter account that belongs to at least one workspace. No API key to paste."
+    }
+  }
+}
