@@ -1,6 +1,6 @@
 # Flixter Plugin for Grok Build
 
-[Flixter](https://flixter.ai) is an AI film and series production studio. This plugin connects Grok Build to Flixter's hosted MCP server so you can read and organise productions in conversation — cast, locations, props, costumes, episodes, scenes, and shots — and queue render work for human approval without leaving the chat.
+[Flixter](https://flixter.ai) is an AI film and series production studio. This plugin connects Grok Build to Flixter's hosted MCP server so you can read and organise productions in conversation — cast, locations, props, costumes, episodes, scenes, and shots — generate individual assets after confirming spend, and queue render batches for human approval without leaving the chat.
 
 ## Installation
 
@@ -26,7 +26,7 @@ Authorization is OAuth 2.1 with PKCE. Clients that have never seen Flixter regis
 |---|---|
 | `studio:read` | See productions: scripts, cast, locations, props, scenes, shots, and media already rendered |
 | `studio:write` | Create and change productions: scenes, shots, cast, locations, props, and related objects |
-| `studio:generate` | Queue rendering work (spends workspace credits when approved and run) |
+| `studio:generate` | Run one-call generators immediately (spends workspace credits) and queue rendering batches (spends when approved and run) |
 | `offline_access` | Refresh tokens so the connection can stay authorized between sessions |
 
 The grant belongs to you, not to one workspace: an authorized client can act in any workspace you are a member of. Revoke a connection from the workspace's installed applications in Flixter.
@@ -37,15 +37,17 @@ A workspace is a separate studio. Every tool takes a `workspace` argument when y
 
 ## Render work and approval
 
-Rendering costs credits, so on a connector the decision to spend stays with a person. The connector does **not** expose one-call generators. Instead, use the `*_plan_*` tools (for example, `scene_plan_render`, `scene_plan_assemble`, `episode_plan_assemble`, `production_plan_assemble`). They register a priced batch and stop there.
+Rendering costs credits. The connector exposes both paths:
 
-The batch appears in Flixter's task manager (studio top bar). You approve it there; then the work begins and results land on the rows. Nothing renders and nothing is billed until a person approves the batch. Asking the connector to run a plan tool again registers a second batch rather than starting the first.
+**One-call generators** (portraits, plates, models, frames, video edits/extends) run and spend workspace credits **immediately**. Grok should confirm with you what will run and roughly how many calls before invoking any of them, and must not loop them silently across a whole scene. Many generators are async — results land on the row later; re-read the row or use `view_image` / `view_video` to see them.
+
+**`*_plan_*` batch tools** (for example `scene_plan_render`, `scene_plan_assemble`, `episode_plan_assemble`, `production_plan_assemble`) are preferred for whole scenes, episodes, or films. They register a priced batch and stop there. The batch appears in Flixter's task manager (studio top bar). You approve it there; then the work begins and results land on the rows. Nothing in that batch renders and nothing for that batch is billed until a person approves it. Asking the connector to run a plan tool again registers a second batch rather than starting the first.
 
 ## Skills
 
 | Skill | What it does |
 |---|---|
-| `flixter-studio` | When and how to use Flixter tools: `workspace_list` first, prefer `plan_*` for renders, approve batches in Flixter's task manager |
+| `flixter-studio` | When and how to use Flixter tools: `workspace_list` first, confirm before one-call generators, prefer `plan_*` for whole scenes, approve batches in Flixter's task manager |
 
 ## Example prompts
 
@@ -55,6 +57,10 @@ List my Flixter workspaces and open the Soft Open production.
 
 ```text
 Ingest this story into a new Flixter production and break it into scenes.
+```
+
+```text
+Generate a portrait for cast member Maya — confirm before spending credits.
 ```
 
 ```text
