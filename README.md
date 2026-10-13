@@ -41,13 +41,19 @@ Rendering costs credits. The connector exposes both paths:
 
 **One-call generators** (portraits, plates, models, frames, video edits/extends) run and spend workspace credits **immediately**. Grok should confirm with you what will run and roughly how many calls before invoking any of them, and must not loop them silently across a whole scene. Revoicing a take to locked voices is treated the same way: it may spend credits, so Grok confirms first. Many generators are async — results land on the row later; re-read the row or use `view_image` / `view_video` to see them.
 
-**`*_plan_*` batch tools** (for example `scene_plan_render`, `scene_plan_assemble`, `episode_plan_assemble`, `production_plan_assemble`) are preferred for whole scenes, episodes, or films. They register a priced batch and stop there. The batch appears in Flixter's task manager (studio top bar). You approve it there; then the work begins and results land on the rows. Nothing in that batch renders and nothing for that batch is billed until a person approves it. Asking the connector to run a plan tool again registers a second batch rather than starting the first.
+**`*_plan_*` batch tools** (for example `scene_plan_render`, `scene_plan_assemble`, `episode_plan_assemble`, `production_plan_assemble`) are preferred for whole scenes, episodes, or films. In Flixter's own chat a batch waits in the task manager (studio top bar) for approval. Over this MCP connection, Flixter's tool descriptions say the call also approves and deploys the batch on the OAuth grant, so Grok confirms with you before calling one and reports the credits from the result. Running a plan tool again creates a second batch. Results are async, so Grok re-reads the rows.
+
+## Ideas and writing
+
+**Pitches and choices**: Grok can show story ideas as pitch cards and ask multiple-choice questions as clickable cards in Flixter, then wait for your pick.
+
+**Scripts**: plan a production's running time scene by scene, then write the whole script, with every scene and its shots, in one parallel pass. Grok confirms before rewriting an existing script or replacing a scene's shots.
 
 ## Takes, voices, and sound
 
 **Takes** — list a shot's takes, choose which one the shot uses, and tag them Circled / Hold / NG (free). Crop a video take (permanent, with an undo), set its segments, or delete a take; Grok confirms with you before cropping or deleting.
 
-**Voices** — lock a character's voice from a take so later renders use it, unlock it to go back to Omni's voice (free), convert older takes to the locked voices (a new take, confirmed before it runs), and switch a converted take between versions.
+**Voices** — lock a character's voice from a take so later renders use it, unlock it to go back to Omni's voice (free), convert older takes to the locked voices (a new take, confirmed before it runs), and switch a converted take between versions. You can also design a voice from TTS samples before any take exists (confirmed first), keep one as the locked voice, bulk-convert a whole scene, episode, or production (free and reversible), and add niqqud to Hebrew dialogue.
 
 **Scene finishing** — set an assembled scene's play order (shots may interleave) and even its background sound across cuts without touching voices.
 

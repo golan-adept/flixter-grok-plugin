@@ -1,6 +1,6 @@
 ---
 name: flixter-studio
-description: "Use Flixter to manage AI film and series productions from Grok Build. Prefer for Flixter workspaces, productions, cast, locations, props, costumes, episodes, scenes, shots, continuity checks, takes (choose, tag, crop, delete, video edits), character voice locking, scene sound and cut order, single-asset generation (with user confirmation before spend), and queuing render or assemble batches via plan_* tools for approval in Flixter's task manager."
+description: "Use Flixter to manage AI film and series productions from Grok Build. Prefer for Flixter workspaces, productions, cast, locations, props, costumes, episodes, scenes, shots, continuity checks, pitching ideas and asking multiple-choice questions as cards, runtime planning and whole-script writing, takes (choose, tag, crop, delete, video edits), character voice design, locking and bulk conversion, Hebrew niqqud, scene sound and cut order, single-asset generation (with user confirmation before spend), and render or assemble batches via plan_* tools (confirm first: over MCP they deploy and bill on call)."
 ---
 
 # Flixter Studio
@@ -16,12 +16,14 @@ Use the Flixter MCP tools provided by this plugin to read and organise film/seri
 ## What Flixter can do
 
 - **Productions** — list, read, create, update; apply a visual style; ingest a script or story.
+- **Talking with the user** — `production_pitch` shows 2–4 ideas as pitch cards; `production_ask` asks a multiple-choice question as clickable cards. After either, stop and wait for the pick (it arrives as the next message); do not also write the options out as text.
+- **Writing** — `production_runtime_plan` sets the scene/second budget for a target running time (call before writing scenes; an off-target plan is refused). `production_write_script` writes every scene of the plan and all their shots in parallel, creating or re-writing scene rows — confirm before running it over an existing script, then read the result and fix with `shot_update` / `scene_write_shots`. `scene_write_shots` writes all of one scene's shots in one call; `replace=true` deletes the scene's current shots first, so confirm before using it.
 - **Story structure** — episodes, scenes, and shots: list, read, create, update, reorder.
 - **World** — cast members and variants, locations, props, costumes and costume states, relationships, story threads, eras.
 - **Media already rendered** — `view_image`, `view_video`.
 - **Judgement** — review clips, check scene frames for continuity, inspect images, report what a scene still needs (`scene_shotable`), apply review clips.
 - **Single-asset generation** — one-call generators for portraits, plates, models, frames, and video (see below; they bill immediately).
-- **Takes and voices** — list, choose, tag, crop, and delete takes; set segments; edit a rendered take; lock character voices and revoice older takes (see below).
+- **Takes and voices** — list, choose, tag, crop, and delete takes; set segments; edit a rendered take; design, lock, and bulk-convert character voices; add Hebrew niqqud (see below).
 - **Assembly** — cut a scene, episode, or final film from takes already rendered, via `*_plan_assemble` tools; set a scene's play order and even its background sound.
 
 ## Single-asset generators — confirm before every call
@@ -30,7 +32,7 @@ These tools run and spend workspace credits **immediately** when called:
 
 - Cast / costume / world: `cast_member_generate_portrait`, `costume_generate_merge`, `location_generate_plate`, `prop_generate_plate`, `prop_generate_model`
 - Shots: `shot_generate_frame`, `shot_generate_last_frame`, `shot_generate_end_frame`, `shot_generate_video`, `shot_edit_frame`, `shot_edit_last_frame`, `shot_extend_video`, `shot_extend_to_next`, `shot_edit_video`
-- Voices: `shot_revoice_take` (a render that may spend credits)
+- Voices and text: `cast_member_design_voice` (renders TTS voice samples), `shot_revoice_take` (a render; its description now says free, but keep confirming), `production_niqqud` (one model call per ~120 lines; edits dialogue)
 
 Before calling any of them:
 
@@ -49,10 +51,14 @@ Before calling any of them:
 
 ## Voices
 
-- `shot_lock_voice` — lock a character's voice from a take (their separated voice, up to 25 s); later renders use it.
+- `cast_member_design_voice` — before any take exists, renders ~12 s samples in up to three voices matching the character's sheet; nothing is saved. Confirm before calling; let the user audition.
+- `cast_member_use_voice` — keep a designed sample as the character's locked voice (free).
+- `shot_lock_voice` — lock a character's voice from a take (their separated voice, up to 25 s). Existing takes are not converted automatically; use `shot_revoice_take` or the bulk converters. Check with the user which take to lock from.
 - `cast_member_unlock_voice` — drop a locked voice; renders go back to Omni's own voice (free).
 - `shot_revoice_take` — convert an older take to the locked voices; lands as a **new** take linked to the original. Treat it as a render: confirm before calling.
 - `shot_take_voice` — switch a converted take between `use=omni` and `use=locked`.
+- `scene_convert_voices` / `episode_convert_voices` / `production_convert_voices` — bulk-convert every take in the scene, episode, or production to the locked voices in one parallel batch (`use=omni` switches back; both versions are kept). Free and async: re-read takes afterwards. Confirm the scope with the user, since it touches many takes.
+- `production_niqqud` — adds full niqqud to Hebrew dialogue lines that have none (letters unchanged); synchronous. Confirm first (see the list above).
 
 ## Whole scenes, episodes, and films — prefer plan_* tools
 
@@ -63,12 +69,12 @@ For a full scene, episode, or film, prefer the batch `*_plan_*` tools over loopi
 - `scene_plan_review` — plan a review of every rendered take in the scene (free).
 - `scene_plan_assemble` / `episode_plan_assemble` / `production_plan_assemble` — plan cuts as approvable batches.
 
-These tools **register** a batch and stop. Tell the user clearly:
+In Flixter's own chat these batches wait in **Flixter's task manager** (studio top bar) for approval. **Over this MCP connection the live tool descriptions say the call also approves and deploys the batch before it returns** (result: `deployed`, `dispatched`, `credits`, or a `note`). So:
 
-1. The batch is waiting in **Flixter's task manager** (studio top bar).
-2. They must **approve** it there before anything renders or is billed.
-3. Re-running the plan tool creates a **second** batch; it does not start the first.
-4. After approval and completion, re-read the rows (`shot_read`, `scene_read`, `view_image`, `view_video`) to show results.
+1. Confirm with the user before calling any `*_plan_*` tool (except the free `scene_plan_review`): say what it covers and that it will spend on call.
+2. Report `deployed` / `credits` / `note` from the result; if not deployed, the batch may be waiting in the task manager for approval.
+3. Re-running the plan tool creates a **second** batch; never re-run to "check" or "start" one.
+4. Results are async: re-read the rows (`shot_read`, `scene_read`, `view_image`, `view_video`) to show results.
 
 Finishing an assembled scene:
 
@@ -81,7 +87,8 @@ Finishing an assembled scene:
 2. Orient with `production_list` / `production_read` (or create / ingest if starting fresh).
 3. Build or edit structure with write tools (cast, locations, props, scenes, shots) — these are confirmed by the client as writes.
 4. For a single portrait, plate, frame, or clip the user asked for: confirm spend, then call the matching one-call generator; re-read when async work finishes.
-5. For expensive whole-scene or whole-film media work: prefer the matching `*_plan_*` tool so the batch is approved in Flixter's task manager.
+1a. Pitching or choosing a direction: `production_pitch` / `production_ask`, then wait. Writing: `production_runtime_plan` → `production_write_script` → review and fix shots.
+5. For expensive whole-scene or whole-film media work: prefer the matching `*_plan_*` tool, after confirming with the user (over MCP it deploys and bills on call).
 6. After work finishes, re-read rows rather than assuming success from the first response alone.
 
 ## Authentication
