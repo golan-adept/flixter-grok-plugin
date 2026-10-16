@@ -55,13 +55,25 @@ Rendering costs credits. The connector exposes both paths:
 
 **Voices** — lock a character's voice from a take so later renders use it, unlock it to go back to Omni's voice (free), convert older takes to the locked voices (a new take, confirmed before it runs), and switch a converted take between versions. You can also design a voice from TTS samples before any take exists (confirmed first), keep one as the locked voice, bulk-convert a whole scene, episode, or production (free and reversible), and add niqqud to Hebrew dialogue.
 
-**Scene finishing** — set an assembled scene's play order (shots may interleave) and even its background sound across cuts without touching voices.
+**Removing voices** — strip every voice from a take, keeping effects and music, as a new take (free).
+
+**Scene finishing** — mark which scenes are ready for the episode cut (only marked scenes are assembled), set an assembled scene's play order (shots may interleave) and even its background sound across cuts without touching voices.
+
+## References and characters
+
+Grok can list the photos and clips you uploaded to a production, label what each one is for, and pass them as references to plates, fittings, and frames. It can also make an uploaded photo a character's face — this replaces the current portrait, so Grok confirms first and asks you whether the picture shows a real person who consented or nobody real; it never answers that for you. Grok can also split shots' acting into per-character lanes in bulk and link a shot's first or last frame to a neighbouring shot (free).
+
+## Confirmation rules
+
+- Paid one-call generators and renders — confirm before every call. Creating a 2D location renders its plate automatically, so that is confirmed too.
+- `*_plan_*` tools — confirm first; over MCP they deploy and bill on call. `scene_plan_review` is free.
+- Destructive actions — deleting cast, costumes, relationships, or takes; permanently cropping a take; replacing a scene's shots, a script, a scene cut, or a character portrait — confirm first.
 
 ## Skills
 
 | Skill | What it does |
 |---|---|
-| `flixter-studio` | When and how to use Flixter tools: `workspace_list` first, confirm before one-call generators, prefer `plan_*` for whole scenes, approve batches in Flixter's task manager, manage takes, voices, and scene sound |
+| `flixter-studio` | When and how to use Flixter tools: `workspace_list` first, confirm before one-call generators, prefer `plan_*` for whole scenes, approve batches in Flixter's task manager, manage takes, voices, references, and scene sound; confirm before deletes, crops, and overwrites |
 
 ## Example prompts
 
