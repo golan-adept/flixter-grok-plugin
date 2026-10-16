@@ -1,6 +1,6 @@
 # Flixter Plugin for Grok Build
 
-[Flixter](https://flixter.ai) is an AI film and series production studio. This plugin connects Grok Build to Flixter's hosted MCP server so you can read and organise productions in conversation — cast, locations, props, costumes, episodes, scenes, and shots — manage takes, lock character voices, tidy a scene's cut order and background sound, generate individual assets after confirming spend, and queue render batches for human approval without leaving the chat.
+[Flixter](https://flixter.ai) is an AI film and series production studio. This plugin connects Grok Build to Flixter's hosted MCP server so you can read and organise productions in conversation — cast, locations, props, costumes, episodes, scenes, and shots — manage takes, lock character voices, tidy a scene's cut order and background sound, run generators and render batches directly without leaving the chat.
 
 ## Installation
 
@@ -39,9 +39,9 @@ A workspace is a separate studio. Every tool takes a `workspace` argument when y
 
 Rendering costs credits. The connector exposes both paths:
 
-**One-call generators** (portraits, plates, models, frames, video edits/extends) run and spend workspace credits **immediately**. Grok should confirm with you what will run and roughly how many calls before invoking any of them, and must not loop them silently across a whole scene. Revoicing a take to locked voices is treated the same way: it may spend credits, so Grok confirms first. Many generators are async — results land on the row later; re-read the row or use `view_image` / `view_video` to see them.
+**One-call generators** (portraits, plates, models, frames, video edits/extends) run and spend workspace credits **immediately**. Grok runs them directly without asking for spend confirmation and may briefly report the credits spent; for a whole scene it prefers a `*_plan_*` batch over looping generators. Many generators are async — results land on the row later; re-read the row or use `view_image` / `view_video` to see them.
 
-**`*_plan_*` batch tools** (for example `scene_plan_render`, `scene_plan_assemble`, `episode_plan_assemble`, `production_plan_assemble`) are preferred for whole scenes, episodes, or films. In Flixter's own chat a batch waits in the task manager (studio top bar) for approval. Over this MCP connection, Flixter's tool descriptions say the call also approves and deploys the batch on the OAuth grant, so Grok confirms with you before calling one and reports the credits from the result. Running a plan tool again creates a second batch. Results are async, so Grok re-reads the rows.
+**`*_plan_*` batch tools** (for example `scene_plan_render`, `scene_plan_assemble`, `episode_plan_assemble`, `production_plan_assemble`) are preferred for whole scenes, episodes, or films. In Flixter's own chat a batch waits in the task manager (studio top bar) for approval. Over this MCP connection, Flixter's tool descriptions say the call also approves and deploys the batch on the OAuth grant, so Grok calls it directly and reports the credits from the result. Running a plan tool again creates a second batch. Results are async, so Grok re-reads the rows.
 
 ## Ideas and writing
 
@@ -53,7 +53,7 @@ Rendering costs credits. The connector exposes both paths:
 
 **Takes** — list a shot's takes, choose which one the shot uses, and tag them Circled / Hold / NG (free). Crop a video take (permanent, with an undo), set its segments, or delete a take; Grok confirms with you before cropping or deleting.
 
-**Voices** — lock a character's voice from a take so later renders use it, unlock it to go back to Omni's voice (free), convert older takes to the locked voices (a new take, confirmed before it runs), and switch a converted take between versions. You can also design a voice from TTS samples before any take exists (confirmed first), keep one as the locked voice, bulk-convert a whole scene, episode, or production (free and reversible), and add niqqud to Hebrew dialogue.
+**Voices** — lock a character's voice from a take so later renders use it, unlock it to go back to Omni's voice (free), convert older takes to the locked voices (a new take), and switch a converted take between versions. You can also design a voice from TTS samples before any take exists , keep one as the locked voice, bulk-convert a whole scene, episode, or production (free and reversible), and add niqqud to Hebrew dialogue.
 
 **Removing voices** — strip every voice from a take, keeping effects and music, as a new take (free).
 
@@ -65,15 +65,14 @@ Grok can list the photos and clips you uploaded to a production, label what each
 
 ## Confirmation rules
 
-- Paid one-call generators and renders — confirm before every call. Creating a 2D location renders its plate automatically, so that is confirmed too.
-- `*_plan_*` tools — confirm first; over MCP they deploy and bill on call. `scene_plan_review` is free.
-- Destructive actions — deleting cast, costumes, relationships, or takes; permanently cropping a take; replacing a scene's shots, a script, a scene cut, or a character portrait — confirm first.
+- Paid tools (generators, renders, `*_plan_*` batches, voice design, niqqud, 2D location plates) — Grok runs them **without** asking for confirmation and may briefly report credits spent. It never re-runs a plan blindly (that creates a second batch).
+- Destructive actions — the only things Grok confirms first: deleting cast, costumes, relationships, or takes; permanently cropping a take; rewriting an existing script; replacing a scene's shots, the script (`adopt=replace`), a character portrait (plus the consent question), an existing linked first/last frame, or a scene cut (`scene_even_sound`).
 
 ## Skills
 
 | Skill | What it does |
 |---|---|
-| `flixter-studio` | When and how to use Flixter tools: `workspace_list` first, confirm before one-call generators, prefer `plan_*` for whole scenes, approve batches in Flixter's task manager, manage takes, voices, references, and scene sound; confirm before deletes, crops, and overwrites |
+| `flixter-studio` | When and how to use Flixter tools: `workspace_list` first, run paid tools directly, prefer `plan_*` for whole scenes, manage takes, voices, references, and scene sound; confirm before deletes, crops, and overwrites |
 
 ## Example prompts
 
@@ -86,7 +85,7 @@ Ingest this story into a new Flixter production and break it into scenes.
 ```
 
 ```text
-Generate a portrait for cast member Maya — confirm before spending credits.
+Generate a portrait for cast member Maya.
 ```
 
 ```text
@@ -94,7 +93,7 @@ Show the takes for shot 3, circle the best one, and make it current.
 ```
 
 ```text
-Plan the renders for scene 2 — I will approve the batch in Flixter's task manager.
+Plan the renders for scene 2 — I will see the credits it spent.
 ```
 
 ## Resources
